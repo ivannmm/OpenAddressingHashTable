@@ -1,3 +1,5 @@
+import java.util.Iterator;
+
 public class OpenAddressingHashTable <K, V> {
 
     private Pair<K, V>[] storage;
@@ -21,7 +23,7 @@ public class OpenAddressingHashTable <K, V> {
     }
 
     public int getSize(){
-        return size;
+        return countElements;
     }
     public boolean isEmpty() {
         return countElements == 0;
@@ -57,7 +59,8 @@ public class OpenAddressingHashTable <K, V> {
         if (countElements < size) {
             Pair<K, V> pair = new Pair<>(key, value);
             int hash = key.hashCode() % size;
-            while (storage[hash] != null || storage[hash] != DEL) {
+            while ((storage[hash] != null || storage[hash] != DEL)
+                    && !storage[hash].getKey().equals(key)) {
                 hash = (hash + 1) % size;
             }
             storage[hash] = pair;
@@ -80,6 +83,7 @@ public class OpenAddressingHashTable <K, V> {
         return null;
     }
 
+
     private Pair DEL;
     public boolean remove (K key) {
         int index = key.hashCode() % size;
@@ -95,6 +99,7 @@ public class OpenAddressingHashTable <K, V> {
         return false;
     }
 
+    @SuppressWarnings("unchecked")
     private void restructuring (K newKey, V newValue){
         Pair<K, V>[] temp = new Pair[storage.length * 2];
         for (Pair<K, V> kvPair : storage) {
@@ -110,11 +115,28 @@ public class OpenAddressingHashTable <K, V> {
         put(newKey, newValue);
     }
 
-    /**public Iterator<> iterator() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public boolean equals (Object o){
+        if (o.getClass() != this.getClass())
+            return false;
+        OpenAddressingHashTable<K,V> forEquals = (OpenAddressingHashTable<K, V>) o;
+        if (getSize() != forEquals.getSize())
+            return false;
+        for (Pair<K, V> kvPair : storage) {
+            if (kvPair != null && kvPair != DEL) {
+                if (!forEquals.getOrDefault(kvPair.getKey()).equals(kvPair.getValue()))
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    /**public Iterator<K> iterator() {
         return new OAHTIterator();
     }
 
-    private class OAHTIterator implements Iterator<T> {
+    private class OAHTIterator implements Iterator<K> {
 
         private int currentNumber = 0;
         private int countFind = 0;
@@ -126,7 +148,7 @@ public class OpenAddressingHashTable <K, V> {
         }
 
         @Override
-        public T next() {
+        public K next() {
             if (!hasNext())
                 throw new IllegalStateException();
             while (storage[currentNumber] == null || storage[currentNumber] == DEL) {
@@ -135,7 +157,7 @@ public class OpenAddressingHashTable <K, V> {
             element = storage[currentNumber];
             countFind++;
             currentNumber++;
-            return (T) element;
+            return (K) element;
         }
 
         @Override
