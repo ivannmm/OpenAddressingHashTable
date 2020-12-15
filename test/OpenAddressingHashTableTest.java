@@ -41,5 +41,7 @@ public class OpenAddressingHashTableTest {
         Assert.assertEquals("test", tableOne.getOrDefault(12312));
         tableOne.put(12312, "t");
         Assert.assertEquals("t", tableOne.getOrDefault(12312));
+        OpenAddressingHashTable<Integer, String> tableThree = new OpenAddressingHashTable<Integer, String>(tableTwo);
+        Assert.assertEquals(1, tableThree.getSize());
     }
 }

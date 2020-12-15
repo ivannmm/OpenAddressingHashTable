@@ -1,6 +1,12 @@
-import java.util.Iterator;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class OpenAddressingHashTable <K, V> {
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
+public class OpenAddressingHashTable <K, V> implements Map<K, V> {
 
     private Pair<K, V>[] storage;
 
@@ -19,60 +25,58 @@ public class OpenAddressingHashTable <K, V> {
     }
 
     public OpenAddressingHashTable (OpenAddressingHashTable<K, V> table) {
-
+        size = table.getSize();
+        countElements = table.getSize();
+        Iterator<K> it = table.iterator();
+        while (it.hasNext()){
+            K key = it.next();
+            put(key, table.getOrDefault(key));
+        }
     }
 
-    public int getSize(){
+    @Override
+    public int size() {
         return countElements;
     }
+
     public boolean isEmpty() {
         return countElements == 0;
     }
 
-    public void clear() {
-        storage = new Pair[size];
-        countElements = 0;
-    }
-
-    public boolean containsKey (K key) {
-        int index = key.hashCode() % size;
+    @Override
+    public boolean containsKey(Object o) {
+        if (o == null)
+            return false;
+        K k = (K) o;
+        int index = k.hashCode() % size;
         int startIndex = index;
         do {
-            if (storage[index] != null && key.equals(storage[index].getKey()))
+            if (storage[index] != null && k.equals(storage[index].getKey()))
                 return true;
             index = (index + 1) % size;
         } while (index != startIndex);
         return false;
     }
 
-    public boolean containsValue (V value) {
+    @Override
+    public boolean containsValue(Object o) {
+        if (o == null)
+            return false;
+        V k = (V) o;
         int index = 0;
         while (index < size) {
-            if (storage[index] != null && value.equals(storage[index].getValue()))
+            if (storage[index] != null && k.equals(storage[index].getValue()))
                 return true;
             index++;
         }
         return false;
     }
 
-    public boolean put (K key, V value) {
-        if (countElements < size) {
-            Pair<K, V> pair = new Pair<>(key, value);
-            int hash = key.hashCode() % size;
-            while ((storage[hash] != null || storage[hash] != DEL)
-                    && !storage[hash].getKey().equals(key)) {
-                hash = (hash + 1) % size;
-            }
-            storage[hash] = pair;
-            countElements++;
-            return true;
-        } else {
-            restructuring(key, value);
-        }
-        return false;
-    }
-
-    public Object getOrDefault (K key) {
+    @Override
+    public V get(Object o) {
+        if (o == null)
+            throw new IllegalArgumentException();
+        K key = (K) o;
         int index = key.hashCode() % size;
         int startIndex = index;
         do {
@@ -83,20 +87,73 @@ public class OpenAddressingHashTable <K, V> {
         return null;
     }
 
-
+    @Nullable
+    @Override
+    public Object put(Object o, Object o2) {
+        if (o == null || o2 == null)
+            throw new IllegalArgumentException();
+        K key = (K) o;
+        V value = (V) o2;
+        if (countElements < size) {
+            Pair<K, V> pair = new Pair<>(key, value);
+            int hash = key.hashCode() % size;
+            while ((storage[hash] != null || storage[hash] != DEL)
+                    && !storage[hash].getKey().equals(key)) {
+                hash = (hash + 1) % size;
+            }
+            storage[hash] = pair;
+            countElements++;
+            return value;
+        } else {
+            restructuring(key, value);
+        }
+    }
     private Pair DEL;
-    public boolean remove (K key) {
+    @Override
+    public V remove(Object o) {
+        if (o == null)
+            throw new IllegalArgumentException();
+        K key = (K) o;
         int index = key.hashCode() % size;
         int startIndex = index;
         do {
             if (storage[index] != null && key.equals(storage[index].getKey())) {
+                V temp = storage[index].getValue();
                 storage[index] = DEL;
                 countElements--;
-                return true;
+                return temp;
             }
             index = (index + 1) % size;
         } while (index != startIndex);
-        return false;
+        return null;
+    }
+
+    @Override
+    public void putAll(@NotNull Map map) {
+
+    }
+
+    public void clear() {
+        storage = new Pair[size];
+        countElements = 0;
+    }
+
+    @NotNull
+    @Override
+    public Set keySet() {
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public Collection values() {
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public Set<Entry> entrySet() {
+        return null;
     }
 
     @SuppressWarnings("unchecked")
@@ -121,18 +178,18 @@ public class OpenAddressingHashTable <K, V> {
         if (o.getClass() != this.getClass())
             return false;
         OpenAddressingHashTable<K,V> forEquals = (OpenAddressingHashTable<K, V>) o;
-        if (getSize() != forEquals.getSize())
+        if (size() != forEquals.size())
             return false;
         for (Pair<K, V> kvPair : storage) {
             if (kvPair != null && kvPair != DEL) {
-                if (!forEquals.getOrDefault(kvPair.getKey()).equals(kvPair.getValue()))
+                if (!forEquals.get(kvPair.getKey()).equals(kvPair.getValue()))
                     return false;
             }
         }
         return true;
     }
 
-    /**public Iterator<K> iterator() {
+    public Iterator<K> iterator() {
         return new OAHTIterator();
     }
 
@@ -148,6 +205,7 @@ public class OpenAddressingHashTable <K, V> {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         public K next() {
             if (!hasNext())
                 throw new IllegalStateException();
@@ -168,5 +226,5 @@ public class OpenAddressingHashTable <K, V> {
             size--;
             countFind--;
         }
-    }*/
+    }
 }
