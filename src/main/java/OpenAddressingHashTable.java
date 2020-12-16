@@ -266,12 +266,15 @@ public class OpenAddressingHashTable <K, V> implements Map<K, V> {
         List<OpenAddressingHashTable.Entry<K, V>> list = new ArrayList<>();
 
         OAHTIterator(){
-            list.addAll(Arrays.asList(storage));
+            for (Entry<K, V> entry : storage) {
+                if (entry != null && entry != DEL)
+                    list.add(entry);
+            }
         }
 
         @Override
         public boolean hasNext() {
-            return currentNumber < countElements;
+            return currentNumber < list.size();
         }
 
         @Override
