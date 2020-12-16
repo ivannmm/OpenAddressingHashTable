@@ -81,6 +81,7 @@ public class OpenAddressingHashTable <K, V> implements Map<K, V> {
         return null;
     }
 
+
     @Nullable
     @Override
     @SuppressWarnings("unchecked")
@@ -274,7 +275,7 @@ public class OpenAddressingHashTable <K, V> implements Map<K, V> {
         }
 
         @Override
-        public OpenAddressingHashTable.Entry<K , V> next() {
+        public Entry<K , V> next() {
             if (!hasNext())
                 throw new IllegalStateException();
             while (list.get(currentNumber) == null || list.get(currentNumber) == DEL) {
